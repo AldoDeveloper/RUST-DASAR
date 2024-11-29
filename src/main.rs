@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+mod utils;
+
 use std::{fmt, mem};
 
 //Debug
@@ -510,4 +512,208 @@ fn for_loop_in_range(){
             }
         }
     }   
+}
+
+//Destructing Match struct
+#[derive(Debug)]
+struct Circle{
+    radius: i32,
+    x: i32,
+    y: i32
+}
+
+
+#[test]
+fn destructing_match_struct(){
+    let instance_struct = Circle {radius: 10, x: 20, y: 90};
+    match instance_struct {
+        Circle { radius, x, y } => println!("println circle radius :{}, x: {}, y: {}", radius, x, y),
+    }
+}
+
+#[allow(dead_code)]
+enum Temparature {
+    Celcius(f32),
+    Fahreinheit(f32)
+}
+
+#[test]
+fn guard_match(){
+
+    let temperature = Temparature::Celcius(45.90);
+
+    match temperature {
+        Temparature::Celcius(t) if t > 30.60 => println!("Celcius is Hot : {}", t),
+        Temparature::Celcius(t) => println!("Temperature Celcius {}", t),
+        Temparature::Fahreinheit(t) => print!("Fahreinheit is {}", t)
+    }
+}
+
+#[test]
+
+fn if_let(){
+
+    //if let manual
+    let some : Option<i32>  = Some(200);
+    let none : Option<u32>  = None;
+    
+    match some {
+        Some(i) if i > 100 => println!("Some is > {}", i),
+        Some(i) => print!("Some is {}", i),
+        _ => {}
+    }
+
+    if let Some(i) = some{
+        println!("{:?}", i)
+    }
+
+    if let Some(i) = none{
+        println!("{}", true)
+    }else {
+        println!("{}", false)
+    }
+}
+
+//Function
+#[derive(Debug)]
+
+struct  Point{
+    x: f32,
+    y: f32
+}
+
+impl Point {
+    fn origin() -> Point{
+        Point { x: 0.0, y: 0.0 }
+    }
+
+    fn set(x: f32, y: f32) -> Point{
+        Point { x: x, y: y }
+    }
+}
+
+#[derive(Debug)]
+struct Rectangle{
+    p1: Point,
+    p2: Point
+}
+
+impl  Rectangle {
+
+    fn area(&self) -> f32{
+        let Point { x: x1, y: y1 } = self.p1;
+        let Point { x: x2, y: y2 } = self.p2;
+        
+        ((x1 - x2) * (y1 - y2 )).abs()
+    }
+
+    fn perimeter(&self) -> f32{
+        let Point { x: x1, y: y1 } = self.p1;
+        let Point { x: x2, y: y2 } = self.p2;
+        2.0 * ((x1 - x2).abs() * (y1 - y2).abs())
+    }
+
+    fn translate(&mut self, x: f32, y: f32) {
+
+        self.p1.x += x;
+        self.p2.x += x;
+
+        self.p1.y += y;
+        self.p2.y += y;
+    }
+}
+
+#[test]
+
+fn funtion_test(){
+
+    //instance variable
+    let origin = Point::origin();
+
+    let rectangle = Rectangle {
+        p1: Point::origin(),
+        p2: Point::set(100.0, 100.0)
+    };
+
+    let some_option            = Some(origin);
+    let mut some_rectangle = Some(rectangle);
+
+    if let Some(mut arg) = some_rectangle{
+        arg.translate(2.0, 5.0);
+        println!("methode rectangle area: {}", arg.area());
+        println!("methode rectangle perimeter : {}", arg.perimeter());
+    }
+
+    println!("{:?}", some_option);
+}
+
+//Closure Function
+#[test]
+fn closure_fn(){
+
+    let cls = |arg: &str| println!("Hello Println Closure {}", arg);
+    let add = |x: i32, y:i32| x + y;
+
+    let vec = vec![10, 20, 30];
+    let constain = move |need| vec.contains(need);
+    println!("{}", constain(&10));
+    println!("add : {:?}", add(10, 20));
+}
+
+// Closure Function as Input Parameter
+fn apply<F>(f: F) where
+    F : FnOnce(){
+        f()
+    }
+
+fn app_applay_to_args<F>(f : F) -> i32 where 
+    F: Fn(i32) -> i32{
+        f(10)
+    }
+
+fn app_input_function<F: Fn(i32, f32)>(f: F){
+    f(100, 200.0)
+}
+
+#[test]
+fn test_closure_fn() {
+
+    let gh = || {
+        println!("Hello World 22");
+    };
+
+    let args_cls = |args: i32| 10 * args;
+    println!("{}" , app_applay_to_args(args_cls));
+    apply(gh);
+
+    let input_fn = |x: i32, y:f32| {
+        println!("x: [{}], y: [{}]", x, y);
+    };
+    app_input_function(input_fn);
+}
+
+#[derive(Debug)]
+struct  Test{
+    app: bool
+}
+
+//Closure Output Parameters
+fn create_fn_app(args: i32) -> impl Fn(){
+    let text = "Fn".to_owned();
+    move || println!("{}, {}", text, args)
+}
+
+fn result_app() -> Vec<Test>{
+    vec![ Test{ app: true }, Test{ app: false } ]
+}
+
+fn create_fn_mut(args: i32) -> impl FnOnce(){
+    let app_text = "FnOnce".to_owned();
+    move || println!("{}, {}", app_text, args)
+}
+
+#[test]
+fn closure_output_parameter() {
+    let create_fn = create_fn_app(100);
+    create_fn();
 }
